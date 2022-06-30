@@ -1,9 +1,9 @@
 package code
 
 import (
-	"hackassembler/common"
-	"hackassembler/module/parser"
-	"hackassembler/module/symboltable"
+	common2 "hackassembler/hackassembler/common"
+	"hackassembler/hackassembler/module/parser"
+	"hackassembler/hackassembler/module/symboltable"
 	"strconv"
 )
 
@@ -17,21 +17,21 @@ type Binary struct {
 func FromCommand(command parser.Command) Binary {
 	symbolTable := symboltable.SymbolTable()
 	binary := Binary{}
-	if command.CommandType == common.COMMAND_C {
+	if command.CommandType == common2.COMMAND_C {
 		binary.Dest = dest(command.Dest)
 		binary.Comp = comp(command.Comp)
 		binary.Jump = jump(command.Jump)
 		binary.Line = "111" + binary.Comp + binary.Dest + binary.Jump
 	}
-	if command.CommandType == common.COMMAND_A {
+	if command.CommandType == common2.COMMAND_A {
 		if _, err := strconv.Atoi(command.Symbol); err == nil {
-			binary.Line = common.DecimalToBinary(command.Symbol)
+			binary.Line = common2.DecimalToBinary(command.Symbol)
 		} else {
 			if !symboltable.Contains(symbolTable, command.Symbol) {
 				symbolTable.AddVariable(command.Symbol)
 			}
 			address := symboltable.GetAddress(symbolTable, command.Symbol)
-			binary.Line = common.DecimalToBinary(strconv.Itoa(address))
+			binary.Line = common2.DecimalToBinary(strconv.Itoa(address))
 		}
 	}
 	return binary

@@ -2,7 +2,7 @@ package parser
 
 import (
 	"bufio"
-	"hackassembler/common"
+	"hackassembler/hackassembler/common"
 	"regexp"
 	"strings"
 )
