@@ -3,36 +3,63 @@ package main
 import (
 	"bufio"
 	"fmt"
+	"hackassembler/common"
 	"hackassembler/module/code"
 	parser "hackassembler/module/parser"
-	"hackassembler/utils"
+	table "hackassembler/module/symboltable"
 	"os"
+	"strings"
 )
-
-const fileName = "PongL"
 
 func main() {
 	/* Initializer */
-	rFile, err := os.Open("asm/" + fileName + ".asm")
-	utils.HandleErr(err)
+	var fileName string
+	fmt.Print("Please enter the Assembly file name which is in the 'asm' directory...\nex) Max\n")
+	fmt.Scanf("%s", &fileName)
+	pass1, err := os.Open("asm/" + fileName + ".asm")
+	pass2, err := os.Open("asm/" + fileName + ".asm")
+	common.HandleErr(err)
 	wFile, err := os.Create("hack/" + fileName + ".hack")
-	utils.HandleErr(err)
-	defer rFile.Close()
+	common.HandleErr(err)
+	defer pass1.Close()
+	defer pass2.Close()
 	defer wFile.Close()
-	scanner := bufio.NewScanner(rFile)
-	fmt.Println("******************** ASSEMBLE START ********************")
+
+	symbolTable := table.SymbolTable()
+	scanner := bufio.NewScanner(pass1)
+	lineNumber := 0
+
 	for parser.HasMoreCommands(scanner) {
-		line := scanner.Text()
-		fmt.Printf("########## current line : %s ##########\n", line)
+		line := deleteInlineComment(scanner.Text())
 		if parser.IsEmptyOrComment(line) {
-			fmt.Println("########## skip ##########")
 			continue
 		}
-		command := parser.Advance(line)
-		binary := code.FromCommand(command)
-		fmt.Fprintf(wFile, fmt.Sprintln(binary.Line))
-		fmt.Printf("########## binary line : %s ##########\n", binary.Line)
+		command := parser.Advance(line, lineNumber)
+		if command.CommandType == common.COMMAND_L {
+			symbolTable.AddCommand(command.Symbol, command.LineNumber)
+		} else {
+			lineNumber++
+		}
 	}
-	utils.HandleErr(scanner.Err())
-	fmt.Println("******************** ASSEMBLE END ********************")
+	scanner = bufio.NewScanner(pass2)
+	for parser.HasMoreCommands(scanner) {
+		line := deleteInlineComment(scanner.Text())
+		if parser.IsEmptyOrComment(line) {
+			continue
+		}
+		command := parser.Advance(line, lineNumber)
+		if command.CommandType != common.COMMAND_L {
+			binary := code.FromCommand(command)
+			fmt.Fprintf(wFile, fmt.Sprintln(binary.Line))
+		}
+	}
+	common.HandleErr(scanner.Err())
+}
+
+func deleteInlineComment(line string) string {
+	hasComment := strings.Index(line, "//")
+	if hasComment > -1 {
+		line = strings.Split(line, "//")[0]
+	}
+	return line
 }

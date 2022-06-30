@@ -1,14 +1,10 @@
-package utils
+package common
 
 import (
 	"fmt"
 	"log"
 	"strconv"
 )
-
-const COMMAND_A = "COMMAND_A"
-const COMMAND_C = "COMMAND_C"
-const COMMAND_L = "COMMAND_L"
 
 /* HandleErr */
 func HandleErr(err error) {
@@ -18,7 +14,6 @@ func HandleErr(err error) {
 }
 
 func DecimalToBinary(str string) string {
-	fmt.Printf("decimal is : %s\n", str)
 	num, err := strconv.Atoi(str)
 	HandleErr(err)
 	n := int64(num)

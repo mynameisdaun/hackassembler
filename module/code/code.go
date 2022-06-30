@@ -1,9 +1,10 @@
 package code
 
 import (
-	"fmt"
+	"hackassembler/common"
 	"hackassembler/module/parser"
-	"hackassembler/utils"
+	"hackassembler/module/symboltable"
+	"strconv"
 )
 
 type Binary struct {
@@ -14,18 +15,24 @@ type Binary struct {
 }
 
 func FromCommand(command parser.Command) Binary {
+	symbolTable := symboltable.SymbolTable()
 	binary := Binary{}
-	if command.CommandType == utils.COMMAND_C {
+	if command.CommandType == common.COMMAND_C {
 		binary.Dest = dest(command.Dest)
 		binary.Comp = comp(command.Comp)
 		binary.Jump = jump(command.Jump)
 		binary.Line = "111" + binary.Comp + binary.Dest + binary.Jump
 	}
-	if command.CommandType == utils.COMMAND_A {
-		binary.Line = utils.DecimalToBinary(command.Symbol)
-	}
-	if command.CommandType == utils.COMMAND_L {
-		binary.Line = utils.DecimalToBinary(command.Symbol)
+	if command.CommandType == common.COMMAND_A {
+		if _, err := strconv.Atoi(command.Symbol); err == nil {
+			binary.Line = common.DecimalToBinary(command.Symbol)
+		} else {
+			if !symboltable.Contains(symbolTable, command.Symbol) {
+				symbolTable.AddVariable(command.Symbol)
+			}
+			address := symboltable.GetAddress(symbolTable, command.Symbol)
+			binary.Line = common.DecimalToBinary(strconv.Itoa(address))
+		}
 	}
 	return binary
 }
@@ -84,19 +91,13 @@ var compMap = map[string]string{
 }
 
 func dest(dest string) string {
-	fmt.Printf("######### dest is %s\n", dest)
-	fmt.Printf("######### dest binary is %s\n", destMap[dest])
 	return destMap[dest]
 }
 
 func comp(comp string) string {
-	fmt.Printf("######### comp is %s\n", comp)
-	fmt.Printf("######### comp binary is %s\n", compMap[comp])
 	return compMap[comp]
 }
 
 func jump(jump string) string {
-	fmt.Printf("######### jump is %s\n", jump)
-	fmt.Printf("######### jump binary is %s\n", jumpMap[jump])
 	return jumpMap[jump]
 }

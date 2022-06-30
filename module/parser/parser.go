@@ -2,7 +2,7 @@ package parser
 
 import (
 	"bufio"
-	"hackassembler/utils"
+	"hackassembler/common"
 	"regexp"
 	"strings"
 )
@@ -14,6 +14,7 @@ type Command struct {
 	Jump        string
 	CommandType string
 	Symbol      string
+	LineNumber  int
 }
 
 // 입력에 명령이 더 있는가?
@@ -22,7 +23,7 @@ func HasMoreCommands(scanner *bufio.Scanner) bool {
 }
 
 /* 입력에서 다음 명령을 읽어서, 현재 명령으로 만든다. */
-func Advance(line string) Command {
+func Advance(line string, lineNumber int) Command {
 	line = strings.Replace(line, " ", "", -1)
 	command := Command{
 		Line:        line,
@@ -31,6 +32,7 @@ func Advance(line string) Command {
 		Jump:        jump(line),
 		CommandType: commandType(line),
 		Symbol:      symbol(line),
+		LineNumber:  lineNumber,
 	}
 	return command
 }
@@ -43,16 +45,16 @@ func IsEmptyOrComment(line string) bool {
 /* 명령어의 커맨드 타입을 반환한다 */
 func commandType(line string) string {
 	if strings.HasPrefix(line, "(") {
-		return utils.COMMAND_L
+		return common.COMMAND_L
 	}
 	if strings.HasPrefix(line, "@") {
-		return utils.COMMAND_A
+		return common.COMMAND_A
 	}
-	return utils.COMMAND_C
+	return common.COMMAND_C
 }
 
 func symbol(line string) string {
-	regex := regexp.MustCompile(`\\(|\\)|@`)
+	regex := regexp.MustCompile(`\(|\)|@`)
 	return regex.ReplaceAllString(line, "")
 }
 
