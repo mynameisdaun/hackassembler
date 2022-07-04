@@ -24,7 +24,7 @@ func main() {
 	defer pass1.Close()
 	defer pass2.Close()
 	defer wFile.Close()
-
+	hi
 	symbolTable := table.SymbolTable()
 	scanner := bufio.NewScanner(pass1)
 	lineNumber := 0
